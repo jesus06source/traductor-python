@@ -11,6 +11,14 @@ def traducir_texto():
         messagebox.showwarning("Error", "Debe ingresar un texto para traducir.")
         return
 
+    if origen == destino:
+        messagebox.showinfo("Sin cambios", "El idioma de origen y destino son iguales.")
+        return
+
+    salida_texto.delete("1.0", tk.END)
+    salida_texto.insert(tk.END, "⏳ Traduciendo...")
+    ventana.update_idletasks()
+
     try:
         resultado = traducir(texto, origen, destino)
         salida_texto.delete("1.0", tk.END)
@@ -22,6 +30,11 @@ def limpiar_texto():
     entrada_texto.delete("1.0", tk.END)
     salida_texto.delete("1.0", tk.END)
 
+def intercambiar_idiomas():
+    idioma_origen = combo_origen.get()
+    idioma_destino = combo_destino.get()
+    combo_origen.set(idioma_destino)
+    combo_destino.set(idioma_origen)
 
 # ----------------- Ventana -----------------
 ventana = tk.Tk()
@@ -29,7 +42,6 @@ ventana.title("Traductor Inteligente")
 ventana.geometry("680x620")
 ventana.config(bg="#e8ecf1")
 
-# Centrar ventana
 ventana.update_idletasks()
 w = 680
 h = 620
@@ -48,7 +60,6 @@ frame = tk.Frame(
 )
 frame.pack(padx=25, pady=25, fill=tk.BOTH, expand=True)
 
-# Título
 tk.Label(
     frame,
     text="🌐 Traductor Inteligente",
@@ -78,10 +89,24 @@ combo_origen = ttk.Combobox(idiomas_frame, values=["es", "en", "fr", "it"], widt
 combo_origen.set("es")
 combo_origen.grid(row=0, column=1)
 
-tk.Label(idiomas_frame, text="Destino:", font=("Segoe UI", 11), bg="white").grid(row=0, column=2, padx=10)
+# 🔄 Botón de intercambiar idiomas
+boton_intercambiar = tk.Button(
+    idiomas_frame,
+    text="⇆",
+    font=("Segoe UI", 12, "bold"),
+    bg="#1976d2",
+    fg="white",
+    bd=0,
+    padx=8, pady=2,
+    activebackground="#1565c0",
+    command=intercambiar_idiomas
+)
+boton_intercambiar.grid(row=0, column=2, padx=(10,0))
+
+tk.Label(idiomas_frame, text="Destino:", font=("Segoe UI", 11), bg="white").grid(row=0, column=3, padx=10)
 combo_destino = ttk.Combobox(idiomas_frame, values=["es", "en", "fr", "it"], width=8)
 combo_destino.set("en")
-combo_destino.grid(row=0, column=3)
+combo_destino.grid(row=0, column=4)
 
 # ----------------- Botones -----------------
 boton = tk.Button(
@@ -93,24 +118,24 @@ boton = tk.Button(
     bd=0,
     pady=7,
     padx=12,
-    activebackground="#43a047"
+    activebackground="#43a047",
+    command=traducir_texto
 )
 boton.pack(pady=8)
-boton.config(command=traducir_texto)
 
 boton_limpiar = tk.Button(
     frame,
-    text="🧹 Limpiar todo",
+    text="🧹 Limpiar ",
     font=("Segoe UI", 12, "bold"),
     bg="#e53935",
     fg="white",
     bd=0,
     pady=7,
     padx=12,
-    activebackground="#c62828"
+    activebackground="#c62828",
+    command=limpiar_texto
 )
 boton_limpiar.pack(pady=5)
-boton_limpiar.config(command=limpiar_texto)
 
 # ----------------- Caja de SALIDA -----------------
 tk.Label(frame, text="Traducción:", font=("Segoe UI", 12, "bold"), bg="white").pack(anchor="w", padx=5, pady=5)

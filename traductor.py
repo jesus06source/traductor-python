@@ -16,20 +16,29 @@ MODELOS = {
     "it->fr": "Helsinki-NLP/opus-mt-it-fr"
 }
 
+# Almacena modelos ya cargados para no recargar cada vez
+cache_modelos = {}
+
+def cargar_modelo(clave):
+    if clave not in cache_modelos:
+        modelo_nombre = MODELOS[clave]
+        tokenizer = MarianTokenizer.from_pretrained(modelo_nombre)
+        model = MarianMTModel.from_pretrained(modelo_nombre)
+        cache_modelos[clave] = (tokenizer, model)
+    return cache_modelos[clave]
+
 def traducir(texto, origen, destino):
     clave = f"{origen}->{destino}"
 
     if clave not in MODELOS:
         return "Error: combinación de idiomas no soportada."
 
-    modelo_nombre = MODELOS[clave]
+    tokenizer, model = cargar_modelo(clave)
 
-    tokenizer = MarianTokenizer.from_pretrained(modelo_nombre)
-    model = MarianMTModel.from_pretrained(modelo_nombre)
-
-    # Dividir texto por líneas o puntos para traducir todo
-    oraciones = [s.strip() for s in texto.replace("?", ".").replace("!", ".").split(".") if s.strip()]
+    # Separar el texto para no cortar traducción
+    oraciones = [s.strip() for s in texto.split(".") if s.strip()]
     traducciones = []
+
     for oracion in oraciones:
         tokens = tokenizer([oracion], return_tensors="pt", padding=True)
         traduccion_ids = model.generate(**tokens)
