@@ -45,3 +45,5 @@ def traducir(texto, origen, destino):
         traducciones.append(tokenizer.decode(traduccion_ids[0], skip_special_tokens=True))
 
     return " ".join(traducciones)
+
+#probando el traductor
