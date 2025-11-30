@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from traductor import traducir
-import pyttsx3
+import pyttsx3 # type: ignore
 
 # ----- Lista global para historial -----
 historial_traducciones = []
