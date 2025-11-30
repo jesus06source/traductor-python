@@ -3,6 +3,9 @@ from tkinter import ttk, messagebox
 from traductor import traducir
 import pyttsx3
 
+# ----- Lista global para historial -----
+historial_traducciones = []
+
 # ----- Función mejorada para buscar voz según idioma -----
 def _buscar_voz_por_codigo(engine, codigo_iso):
     """
@@ -32,7 +35,6 @@ def _buscar_voz_por_codigo(engine, codigo_iso):
 
     # Si no se encontró exacta, retorna la primera parcial
     return primera_opcion
-
 
 
 # 🔊 Nueva función de Texto a voz
@@ -89,6 +91,15 @@ def traducir_texto():
         resultado = traducir(texto, origen, destino)
         salida_texto.delete("1.0", tk.END)
         salida_texto.insert(tk.END, resultado)
+
+        # ----- Guardar en historial -----
+        historial_traducciones.append({
+            "origen": origen,
+            "destino": destino,
+            "texto_original": texto,
+            "traduccion": resultado
+        })
+
     except Exception as e:
         messagebox.showerror("Error", f"No se pudo traducir.\n{e}")
 
@@ -103,6 +114,50 @@ def intercambiar_idiomas():
     idioma_destino = combo_destino.get()
     combo_origen.set(idioma_destino)
     combo_destino.set(idioma_origen)
+
+
+def mostrar_historial():
+    if not historial_traducciones:
+        messagebox.showinfo("Historial", "No hay traducciones aún.")
+        return
+
+    # Ventana emergente
+    ventana_historial = tk.Toplevel(ventana)
+    ventana_historial.title("Historial de Traducciones")
+    ventana_historial.geometry("550x450")
+    ventana_historial.config(bg="#f0f0f0")
+
+    # Frame para scrollbar
+    frame_hist = tk.Frame(ventana_historial, bg="#f0f0f0")
+    frame_hist.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+    # Scrollbar
+    scrollbar = tk.Scrollbar(frame_hist)
+    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+    # Text con estilo
+    text_historial = tk.Text(frame_hist, wrap="word", font=("Segoe UI", 10), yscrollcommand=scrollbar.set,
+                            bg="white", fg="#333", bd=0, padx=10, pady=10)
+    text_historial.pack(fill=tk.BOTH, expand=True)
+
+    scrollbar.config(command=text_historial.yview)
+
+    # Insertar traducciones con formato
+    for idx, item in enumerate(historial_traducciones, start=1):
+        text_historial.insert(tk.END, f"Traducción #{idx}\n", "titulo")
+        text_historial.insert(tk.END, f"Idioma: {item['origen']} → {item['destino']}\n", "subtitulo")
+        text_historial.insert(tk.END, f"Original: {item['texto_original']}\n", "contenido")
+        text_historial.insert(tk.END, f"Traducción: {item['traduccion']}\n", "contenido")
+        text_historial.insert(tk.END, "\n" + "-"*50 + "\n\n", "separador")
+
+    # Configurar tags de estilo
+    text_historial.tag_config("titulo", font=("Segoe UI", 11, "bold"), foreground="#1976d2")
+    text_historial.tag_config("subtitulo", font=("Segoe UI", 10, "italic"), foreground="#555")
+    text_historial.tag_config("contenido", font=("Segoe UI", 10), foreground="#333")
+    text_historial.tag_config("separador", foreground="#999")
+
+    text_historial.config(state="disabled")  # Solo lectura
+
 
 
 # ---------- Ventana ----------
@@ -166,6 +221,9 @@ tk.Button(frame, text="🧹 Limpiar ", font=("Segoe UI", 12, "bold"), bg="#e5393
 
 tk.Button(frame, text="🔊 Escuchar", font=("Segoe UI", 12, "bold"), bg="#1976d2", fg="white", bd=0,
         pady=7, padx=12, activebackground="#1565c0", command=texto_a_voz).pack(pady=5)
+
+tk.Button(frame, text="📜 Historial", font=("Segoe UI", 12, "bold"), bg="#ff9800", fg="white", bd=0,
+        pady=7, padx=12, activebackground="#fb8c00", command=mostrar_historial).pack(pady=5)
 
 
 # ---------- Salida ----------
